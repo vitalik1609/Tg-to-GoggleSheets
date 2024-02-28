@@ -61,7 +61,7 @@ async def dump_all_messages(channel):
 		json.dump(all_messages, outfile, ensure_ascii=False, cls=DateTimeEncoder)
 
 async def main():
-	url = '***' # url канала
+	url = 'https://t.me/+Y5XvfbOnsu5lNDIy' # url канала
 	channel = await client.get_entity(url)
 	await dump_all_messages(channel)
 
@@ -74,7 +74,7 @@ async def main():
 		'https://www.googleapis.com/auth/spreadsheets']).authorize(httplib2.Http())
 	service = build('sheets', 'v4', http=creds_auth)
 	sss = service.spreadsheets()
-	sheet_id = '***'
+	sheet_id = '1EwhS7wAKvr8uceLjG52Io3ZbjXqu2H5gW2XX4_gYSuA'
 
 	rows = []
 	i = 0
@@ -93,10 +93,8 @@ async def main():
 		phone, name = msg.pop().split()
 		msg.pop()
 		address = msg.pop()[6:]
-		tags = ['ванная', 'ванны', 'плитка', 'керамогранит', 'санузла', 'туалет',
-				'санузел', 'совмещенный', 'укладка', 'плитки', 'ванной', 'туалете',
-				'пол', 'стены', 'короб', 'кухня', 'коридор', 'прихожая', 'ремонт', 'новостройка']
-		info = ' '.join(filter(lambda x: x.lower() in tags, msg[2].split()))
+		tags = ('ванн', 'туалет', 'кухн', 'коридор', 'прихож', 'фартук', 'квартир', 'пол', 'стен', 'квартир', 'сануз')
+		info = ' '.join([word for word in msg[2].split() if word.lower().startswith(tags)])
 		'''пример записи в таблице'''
 		'''28.02 | 1068 | Имя назначенного мастера | Статут заявки | Ремонт ванной Удельная | Сумма заказа | Комиссия | Виталий | 89991234455'''
 		rows.append([date.today().strftime('%d.%m'), order, '', '', info+address, '', '', name, phone])
