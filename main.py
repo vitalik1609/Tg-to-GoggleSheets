@@ -97,16 +97,50 @@ async def main():
 		info = ' '.join([word for word in msg[2].split() if word.lower().startswith(tags)])
 		'''пример записи в таблице'''
 		'''28.02 | 1068 | Имя назначенного мастера | Статут заявки | Ремонт ванной Удельная | Сумма заказа | Комиссия | Виталий | 89991234455'''
-		rows.append([date.today().strftime('%d.%m'), order, '', '', info+address, '', '', name, phone])
+		rows.append([date.today().strftime('%d.%m.%Y'), '№ '+order, 'ОТДАТЬ', None, None, None, info, address, name, phone])
 		i += 1
-	last_order = rows[0][1]
+	last_order = rows[0][1].split()[1]
 	'''Записываем номер последней записанной в таблицу заявки'''
 	with open('last_order.txt', 'w', encoding='utf-8') as f:
 		f.write(last_order)
 	rows.reverse()
+
+
+	# Получаем данные из первого столбца
+	range_ = 'Заказы!A:A'
+	result = sss.values().get(spreadsheetId=sheet_id, range=range_).execute()
+	values = result.get('values', [])
+
+	# Находим первую пустую ячейку в первом столбце
+	next_empty_row = len(values)+1
+	#for row in values:
+	#	if row and row[0]:
+	#		next_empty_row = values.index(row) + 1
+	#		break
+	# Преобразуем данные в виде, пригодный для вставки
+	data = []
+	for row in rows:
+		data.append({
+			'range': f'A{next_empty_row + i}:J{next_empty_row + i}',
+			'majorDimension': 'ROWS',
+			'values': [
+				[cell for cell in row if cell is not None]  # Пропускаем ячейки со значением None
+			]
+		})
+	# Добавляем данные, начиная с найденной строки
+	#range_ = f'A{next_empty_row}:L'
+	#body = {'values': rows}
+	#result = sss.values().update(
+	#	spreadsheetId=sheet_id, range=range_, valueInputOption='RAW', body=body
+	#).execute()
+	# Вставляем данные
+	#body = {'data': data}
+	#result = sss.spreadsheets().values().batchUpdate(
+	#	spreadsheetId=sheet_id, body=body
+	#).execute()
 	r = sss.values().append(
 		spreadsheetId=sheet_id,
-		range='Заявки Плитка',
+		range=f'Заказы!A{next_empty_row}:J{next_empty_row}',
 		valueInputOption='RAW',
 		body={'values': rows}
 	).execute()
